@@ -1,0 +1,117 @@
+<!-- <beans:beans xmlns="http://www.springframework.org/schema/security" -->
+<!--        xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" -->
+<!--        xsi:schemaLocation="http://www.springframework.org/schema/beans -->
+<!--        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd -->
+<!--        http://www.springframework.org/schema/security -->
+<!--        http://www.springframework.org/schema/security/spring-security-3.0.3.xsd"> -->
+ 
+<!--        <http auto-config="true"> -->
+<!--                        <intercept-url pattern="/welcome*" access="ROLE_USER" /> -->
+<!--                        <form-login login-page="/login" default-target-url="/welcome" -->
+<!--                                        authentication-failure-url="/loginfailed" /> -->
+<!--                        <logout logout-success-url="/logout" /> -->
+<!--        </http> -->
+ 
+<!--        <authentication-manager> -->
+<!--                        <authentication-provider> -->
+<!--                                        <user-service> -->
+<!--                                                        <user name="mkyong" password="123456" authorities="ROLE_USER" /> -->
+<!--                                        </user-service> -->
+<!--                        </authentication-provider> -->
+<!--        </authentication-manager> -->
+ 
+<!-- </beans:beans> -->
+ 
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:sec="http://www.springframework.org/schema/security"
+             xsi:schemaLocation=" http://www.springframework.org/schema/security 
+                                    http://www.springframework.org/schema/security/spring-security-3.1.xsd 
+                                    http://www.springframework.org/schema/beans 
+                                    http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+    
+    <!--Car pool code-->
+    
+<!--    <beans:beans xmlns="http://www.springframework.org/schema/security" 
+                 xmlns:beans="http://www.springframework.org/schema/beans"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+                xmlns:util="http://www.springframework.org/schema/util"
+                xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+		http://www.springframework.org/schema/security 
+		http://www.springframework.org/schema/security/spring-security-3.1.xsd
+		http://www.springframework.org/schema/util 
+		http://www.springframework.org/schema/util/spring-util-3.1.xsd">-->
+        
+    
+<!--    <http use-expressions="true" >
+        <intercept-url pattern="/welcome*" access="isAuthenticated()" />
+        <form-login login-page="/login" authentication-failure-url="/login"
+                    default-target-url="/welcome"/>
+        <access-denied-handler error-page="/login" />
+        <logout logout-success-url="/login" logout-url="/j_spring_security_logout" />
+    </http>
+               
+    <authentication-manager alias="authenticationManager">
+        <authentication-provider>
+            <user-service>
+                <user name="admin" password="admin" authorities="ROLE_ADMIN" />
+                <user name="user" password="user" authorities="ROLE_USER" />
+            </user-service>
+        </authentication-provider>
+    </authentication-manager>-->
+               
+    <http access-denied-page="/error" use-expressions="true" entry-point-ref="authenticaionEntryPoint" xmlns="http://www.springframework.org/schema/security">
+        <intercept-url pattern="/welcome*" access="isAuthenticated()" />
+        <intercept-url pattern="/**" access="permitAll" />     
+        <logout logout-url="/j_spring_security_logout" logout-success-url="/login"/>             
+        <custom-filter before="FORM_LOGIN_FILTER" ref="scribeAuthenticationFilter"/>
+    </http>
+
+    <authentication-manager alias="authenticationManager" xmlns="http://www.springframework.org/schema/security">
+        <!--<authentication-provider ref="scribeAuthenticationProvider"/>-->
+         <authentication-provider>
+            <user-service>
+                <user name="admin" password="admin" authorities="ROLE_ADMIN" />
+                <user name="user" password="user" authorities="ROLE_USER" />
+            </user-service>
+        </authentication-provider>
+    </authentication-manager>
+
+    <beans:bean id="authenticaionEntryPoint" 
+      class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+        <beans:property name="loginFormUrl" value="/login" />
+    </beans:bean>
+
+<!--    <bean id="scribeAuthenticationProvider" 
+      class="org.springframework.security.scribe.ScribeAuthenticationProvider"> 
+        <property name="userDetailsService" ref="userService"/>
+    </bean>-->
+
+    <beans:bean id="scribeAuthenticationFilter" 
+      class="org.springframework.security.scribe.ScribeAuthenticationFilter">
+        <beans:property name="authenticationManager" ref="authenticationManager" />
+        <beans:property name="authenticationSuccessHandler">
+            <beans:bean class="org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler">
+                <beans:property name="defaultTargetUrl" value="/welcomeOAuth" />
+                <beans:property name="alwaysUseDefaultTargetUrl" value="true" />
+            </beans:bean>
+        </beans:property>
+        <beans:property name="authenticationFailureHandler">
+            <beans:bean class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
+                <beans:property name="defaultFailureUrl" value="/error" />
+            </beans:bean>
+        </beans:property>
+        <beans:property name="filterProcessesUrl" value="/loginOAuth"/>
+        <beans:property name="providerConfigurations">
+            <beans:list>
+                <beans:bean class="org.springframework.security.scribe.provider.FacebookProviderConfiguration">
+                    <beans:property name="apiKey" value="1405322699712142"/>
+                    <beans:property name="apiSecret" value="a3c764a9ca1439a5ecedc2d943a7aa73" />
+                </beans:bean>
+            </beans:list>
+        </beans:property>
+    </beans:bean>
+
+</beans:beans>
